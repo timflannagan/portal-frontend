@@ -58,9 +58,11 @@ docker build -t portal-frontend:dev .
   --frontend-image portal-frontend:dev --load-image
 ```
 
-## Backend
+## Backend Contract
 
-The backend is portal-enterprise (`/work/portal-enterprise/`). Route definitions are in `internal/backend/server.go`. All API endpoints are under `/v1`.
+The source of truth is the portal-enterprise REST API (`/v1`). This frontend is a consumer of that API — it does not define its own data models or business logic. All TypeScript types in `src/api/types.ts` are derived from the backend response shapes, and all query/mutation hooks map directly to backend endpoints.
+
+When the backend changes (new fields, new endpoints, changed behavior), the frontend types and hooks should be updated to match. The backend route definitions live in `internal/backend/server.go` in the portal-enterprise repo (`/work/portal-enterprise/`).
 
 ## Known Gaps
 
