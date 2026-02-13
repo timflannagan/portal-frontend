@@ -3,8 +3,9 @@ import { getToken, setToken, clearToken } from "@/api/client";
 import { useCurrentUser } from "@/api/queries/users";
 import { useSyncUser } from "@/api/mutations/users";
 import { queryClient } from "@/lib/query-client";
+import { env } from "@/config/env";
 
-// Simple external store for token reactivity
+// Simple external store for token reactivity (token mode only)
 let listeners: Array<() => void> = [];
 function subscribe(listener: () => void) {
   listeners.push(listener);
@@ -18,16 +19,28 @@ function emitChange() {
 
 export function useAuth() {
   const token = useSyncExternalStore(subscribe, getToken, () => null);
-  const isAuthenticated = !!token;
-
-  const { data: user, isLoading: isLoadingUser } = useCurrentUser(isAuthenticated);
   const syncUser = useSyncUser();
 
+  // In OIDC mode, always try to fetch the user (session cookie handles auth).
+  // In token mode, only fetch when a token is present.
+  const shouldFetchUser = env.oidcEnabled ? true : !!token;
+
+  const { data: user, isLoading: isLoadingUser } = useCurrentUser(shouldFetchUser);
+
+  // In OIDC mode, we're authenticated if /v1/me returned a user.
+  // In token mode, we're authenticated if a token exists.
+  const isAuthenticated = env.oidcEnabled ? !!user : !!token;
+
   const login = useCallback(
-    async (newToken: string) => {
+    async (newToken?: string) => {
+      if (env.oidcEnabled) {
+        // Redirect to the OIDC login path — ExtAuth handles the rest.
+        window.location.href = env.oidcCallbackPath;
+        return;
+      }
+      if (!newToken) return;
       setToken(newToken);
       emitChange();
-      // Sync user with backend on first auth
       try {
         await syncUser.mutateAsync();
       } catch {
@@ -38,6 +51,11 @@ export function useAuth() {
   );
 
   const logout = useCallback(() => {
+    if (env.oidcEnabled) {
+      // Redirect to the OIDC logout path — ExtAuth clears the session.
+      window.location.href = env.oidcLogoutPath;
+      return;
+    }
     clearToken();
     emitChange();
     queryClient.clear();

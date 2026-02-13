@@ -21,4 +21,8 @@ export const env = {
   portalServerUrl: serverUrl,
   bearerToken: getEnv("VITE_BEARER_TOKEN"),
   companyName: getEnv("VITE_COMPANY_NAME", "Developer Portal"),
+  // OIDC auth code flow (server-side via ExtAuth)
+  oidcEnabled: getEnv("VITE_APPLIED_OIDC_AUTH_CODE_CONFIG") === "true",
+  oidcCallbackPath: getEnv("VITE_OIDC_AUTH_CODE_CONFIG_CALLBACK_PATH", "/v1/login"),
+  oidcLogoutPath: getEnv("VITE_OIDC_AUTH_CODE_CONFIG_LOGOUT_PATH", "/v1/logout"),
 } as const;

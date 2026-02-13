@@ -27,13 +27,20 @@ export async function fetchApi(
   path: string,
   options: RequestInit = {},
 ): Promise<Response> {
-  const token = getToken();
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...((options.headers as Record<string, string>) ?? {}),
   };
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
+
+  // In OIDC mode, ExtAuth handles auth via session cookies.
+  // In token mode, send the Bearer token in the Authorization header.
+  if (env.oidcEnabled) {
+    options.credentials = "include";
+  } else {
+    const token = getToken();
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
   }
 
   const res = await fetch(`${env.portalServerUrl}${path}`, {

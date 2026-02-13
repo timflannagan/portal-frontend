@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { TokenInput } from "@/components/auth/token-input";
-import { ChevronDown, Shield, Plug, CircleDot } from "lucide-react";
+import { ChevronDown, Shield, Plug, CircleDot, LogIn, LogOut } from "lucide-react";
 
 interface NavItemProps {
   to: string;
@@ -42,7 +42,7 @@ function NavItem({ to, label }: NavItemProps) {
 }
 
 export function Header() {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, login, logout } = useAuth();
   const isAdmin = useIsAdmin();
   const [showTokenInput, setShowTokenInput] = useState(false);
 
@@ -99,32 +99,74 @@ export function Header() {
 
           {/* User */}
           {isAuthenticated ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowTokenInput(true)}
-              className="gap-2 text-sm"
-            >
-              <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              <span className="max-w-[120px] truncate">
-                {user?.username ?? user?.email ?? "Connected"}
-              </span>
-            </Button>
+            env.oidcEnabled ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="gap-2 text-sm">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                    <span className="max-w-[120px] truncate">
+                      {user?.username ?? user?.email ?? "Connected"}
+                    </span>
+                    <ChevronDown className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {user && (
+                    <>
+                      <div className="px-2 py-1.5 text-xs text-muted-foreground">
+                        {user.email ?? user.username}
+                      </div>
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
+                  <DropdownMenuItem onClick={() => logout()}>
+                    <LogOut className="h-3.5 w-3.5 mr-2" />
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowTokenInput(true)}
+                className="gap-2 text-sm"
+              >
+                <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                <span className="max-w-[120px] truncate">
+                  {user?.username ?? user?.email ?? "Connected"}
+                </span>
+              </Button>
+            )
           ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowTokenInput(true)}
-              className="gap-2 text-sm"
-            >
-              <Plug className="h-3.5 w-3.5" />
-              Connect
-            </Button>
+            env.oidcEnabled ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => login()}
+                className="gap-2 text-sm"
+              >
+                <LogIn className="h-3.5 w-3.5" />
+                Sign in
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowTokenInput(true)}
+                className="gap-2 text-sm"
+              >
+                <Plug className="h-3.5 w-3.5" />
+                Connect
+              </Button>
+            )
           )}
         </div>
       </header>
 
-      <TokenInput open={showTokenInput} onOpenChange={setShowTokenInput} />
+      {!env.oidcEnabled && (
+        <TokenInput open={showTokenInput} onOpenChange={setShowTokenInput} />
+      )}
     </>
   );
 }
