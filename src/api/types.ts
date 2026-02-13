@@ -3,7 +3,7 @@ export type User = {
   name: string;
   email: string;
   username: string;
-  isAdmin?: string;
+  isAdmin?: boolean | string;
 };
 
 // API Products

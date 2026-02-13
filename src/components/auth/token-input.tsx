@@ -64,7 +64,7 @@ export function TokenInput({ open, onOpenChange }: TokenInputProps) {
                 <span className="text-muted-foreground font-mono text-xs">email</span>
                 <span className="truncate">{user?.email ?? "—"}</span>
                 <span className="text-muted-foreground font-mono text-xs">role</span>
-                <span>{user?.isAdmin === "true" ? "Admin" : "Member"}</span>
+                <span>{(user?.isAdmin === true || user?.isAdmin === "true") ? "Admin" : "Member"}</span>
               </div>
             </div>
             <DialogFooter>
