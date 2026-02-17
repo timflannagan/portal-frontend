@@ -18,11 +18,13 @@ function ApisPage() {
   const { data: products, isLoading } = useApiProducts();
   const [search, setSearch] = useState("");
 
-  const filtered = (products ?? []).filter(
-    (p) =>
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.description.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filtered = (products ?? [])
+    .filter(
+      (p) =>
+        p.name.toLowerCase().includes(search.toLowerCase()) ||
+        p.description.toLowerCase().includes(search.toLowerCase()),
+    )
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <div>
