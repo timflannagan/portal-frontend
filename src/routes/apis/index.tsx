@@ -68,9 +68,19 @@ function ApisPage() {
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between gap-2">
                     <CardTitle className="text-base">{product.name}</CardTitle>
-                    <Badge variant="secondary" className="shrink-0 text-xs">
-                      {product.versionsCount} version{product.versionsCount !== 1 ? "s" : ""}
-                    </Badge>
+                    <div className="flex gap-1.5 shrink-0">
+                      {product.apiProductMetadata?.category && (
+                        <Badge 
+                          variant={product.apiProductMetadata.category.toLowerCase().includes("auth") ? "default" : "outline"} 
+                          className="text-xs"
+                        >
+                          {product.apiProductMetadata.category.replace(" APIs", "")}
+                        </Badge>
+                      )}
+                      <Badge variant="secondary" className="text-xs">
+                        {product.versionsCount} version{product.versionsCount !== 1 ? "s" : ""}
+                      </Badge>
+                    </div>
                   </div>
                   <CardDescription className="line-clamp-2">
                     {product.description || "No description"}
