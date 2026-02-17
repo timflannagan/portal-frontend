@@ -18,6 +18,8 @@ import { formatDate } from "@/lib/utils";
 import type { ApiVersion, ApiVersionSchema } from "@/api/types";
 import { lazy, Suspense } from "react";
 
+import "swagger-ui-react/swagger-ui.css";
+
 const SwaggerUI = lazy(() => import("swagger-ui-react"));
 
 export const Route = createFileRoute("/apis/$productId")({
