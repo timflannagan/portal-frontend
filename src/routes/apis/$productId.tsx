@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, FileText, BookOpen, Mail, CheckCircle, Clock } from "lucide-react";
+import { ArrowLeft, FileText, BookOpen, Mail } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import type { ApiVersion, ApiVersionSchema } from "@/api/types";
 import { lazy, Suspense } from "react";
@@ -72,22 +72,9 @@ function ProductDetailPage() {
         <span className="text-foreground">{product.name}</span>
       </div>
 
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{product.name}</h1>
-          <p className="text-muted-foreground mt-1">{product.description}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          {product.autoApproval ? (
-            <Badge variant="secondary" className="gap-1">
-              <CheckCircle className="h-3 w-3" /> Auto-approve
-            </Badge>
-          ) : (
-            <Badge variant="outline" className="gap-1">
-              <Clock className="h-3 w-3" /> Manual approval
-            </Badge>
-          )}
-        </div>
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">{product.name}</h1>
+        <p className="text-muted-foreground mt-1">{product.description}</p>
       </div>
 
       {product.contactEmail && (

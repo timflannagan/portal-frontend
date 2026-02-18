@@ -18,7 +18,6 @@ export type ApiProductSummary = {
 };
 
 export type ApiProductDetails = {
-  autoApproval: boolean;
   contactEmail: string;
   createdAt: string;
   description: string;
