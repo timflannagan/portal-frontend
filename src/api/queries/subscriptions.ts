@@ -35,6 +35,57 @@ function getSubscriptionStatus(sub: Subscription): SubscriptionStatus {
   return "pending";
 }
 
+export function useAllSubscriptions() {
+  const { data: teams, isLoading: teamsLoading } = useTeams();
+
+  const appQueries = useQueries({
+    queries: (teams ?? []).map((team) => ({
+      queryKey: ["apps", "team", team.id] as const,
+      queryFn: () => fetchJson<App[]>(`/teams/${team.id}/apps`),
+      enabled: !!teams?.length,
+    })),
+  });
+
+  const apps = appQueries.flatMap((q) => q.data ?? []);
+  const appsLoading = appQueries.some((q) => q.isLoading);
+
+  const subQueries = useQueries({
+    queries: apps.map((app) => ({
+      queryKey: subscriptionKeys.forApp(app.id),
+      queryFn: async () => {
+        const res = await fetchJson<Subscription[] | { message: string }>(`/apps/${app.id}/subscriptions`);
+        if (res && typeof res === "object" && "message" in res && !Array.isArray(res)) {
+          return [];
+        }
+        return res as Subscription[];
+      },
+      enabled: apps.length > 0,
+    })),
+  });
+
+  const subsLoading = subQueries.some((q) => q.isLoading);
+  const allSubs = subQueries.flatMap((q) => q.data ?? []);
+
+  // Build a map of productId -> best status
+  const statusByProduct = new Map<string, SubscriptionStatus>();
+  for (const sub of allSubs) {
+    const subStatus = getSubscriptionStatus(sub);
+    const existing = statusByProduct.get(sub.apiProductId);
+    // Priority: approved > pending > rejected
+    if (!existing || 
+        (subStatus === "approved") ||
+        (subStatus === "pending" && existing === "rejected")) {
+      statusByProduct.set(sub.apiProductId, subStatus);
+    }
+  }
+
+  return {
+    subscriptions: allSubs,
+    statusByProduct,
+    isLoading: teamsLoading || appsLoading || subsLoading,
+  };
+}
+
 export function useProductSubscriptionStatus(productId: string) {
   const { data: teams, isLoading: teamsLoading } = useTeams();
 
