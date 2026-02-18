@@ -79,7 +79,7 @@ function ProductDetailPage() {
           <h1 className="text-2xl font-semibold tracking-tight">{product.name}</h1>
           <p className="text-muted-foreground mt-1">{product.description}</p>
         </div>
-        {!loadingSubscription && subscriptionStatus && (
+        {!loadingSubscription && (
           <SubscriptionStatusBadge status={subscriptionStatus} />
         )}
       </div>
@@ -233,11 +233,11 @@ function methodVariant(method: string): "default" | "secondary" | "destructive" 
   }
 }
 
-function SubscriptionStatusBadge({ status }: { status: SubscriptionStatus }) {
+function SubscriptionStatusBadge({ status }: { status: SubscriptionStatus | null }) {
   switch (status) {
     case "approved":
       return (
-        <Badge variant="secondary" className="gap-1">
+        <Badge className="gap-1 bg-green-600 text-white">
           <CheckCircle className="h-3 w-3" /> Subscribed
         </Badge>
       );
@@ -251,6 +251,12 @@ function SubscriptionStatusBadge({ status }: { status: SubscriptionStatus }) {
       return (
         <Badge variant="destructive" className="gap-1">
           <XCircle className="h-3 w-3" /> Rejected
+        </Badge>
+      );
+    default:
+      return (
+        <Badge variant="outline" className="gap-1 text-muted-foreground">
+          Not Subscribed
         </Badge>
       );
   }
