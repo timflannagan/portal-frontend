@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useApiProductDetails, useApiProductVersions } from "@/api/queries/api-products";
+import { useProductSubscriptionStatus } from "@/api/queries/subscriptions";
 import { CardSkeleton } from "@/components/common/loading-skeleton";
 import { EmptyState } from "@/components/common/empty-state";
 import { Badge } from "@/components/ui/badge";
@@ -13,9 +14,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, FileText, BookOpen, Mail } from "lucide-react";
+import { ArrowLeft, FileText, BookOpen, Mail, CheckCircle, Clock, XCircle } from "lucide-react";
 import { formatDate } from "@/lib/utils";
-import type { ApiVersion, ApiVersionSchema } from "@/api/types";
+import type { ApiVersion, ApiVersionSchema, SubscriptionStatus } from "@/api/types";
 import { lazy, Suspense } from "react";
 
 import "swagger-ui-react/swagger-ui.css";
@@ -30,6 +31,7 @@ function ProductDetailPage() {
   const { productId } = Route.useParams();
   const { data: product, isLoading: loadingProduct } = useApiProductDetails(productId);
   const { data: versions, isLoading: loadingVersions } = useApiProductVersions(productId);
+  const { status: subscriptionStatus, isLoading: loadingSubscription } = useProductSubscriptionStatus(productId);
   const [selectedVersionId, setSelectedVersionId] = useState<string>("");
   const [specView, setSpecView] = useState<"redoc" | "swagger">("redoc");
 
@@ -72,9 +74,14 @@ function ProductDetailPage() {
         <span className="text-foreground">{product.name}</span>
       </div>
 
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{product.name}</h1>
-        <p className="text-muted-foreground mt-1">{product.description}</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">{product.name}</h1>
+          <p className="text-muted-foreground mt-1">{product.description}</p>
+        </div>
+        {!loadingSubscription && subscriptionStatus && (
+          <SubscriptionStatusBadge status={subscriptionStatus} />
+        )}
       </div>
 
       {product.contactEmail && (
@@ -223,5 +230,28 @@ function methodVariant(method: string): "default" | "secondary" | "destructive" 
       return "destructive";
     default:
       return "outline";
+  }
+}
+
+function SubscriptionStatusBadge({ status }: { status: SubscriptionStatus }) {
+  switch (status) {
+    case "approved":
+      return (
+        <Badge variant="secondary" className="gap-1">
+          <CheckCircle className="h-3 w-3" /> Subscribed
+        </Badge>
+      );
+    case "pending":
+      return (
+        <Badge variant="outline" className="gap-1">
+          <Clock className="h-3 w-3" /> Pending
+        </Badge>
+      );
+    case "rejected":
+      return (
+        <Badge variant="destructive" className="gap-1">
+          <XCircle className="h-3 w-3" /> Rejected
+        </Badge>
+      );
   }
 }
