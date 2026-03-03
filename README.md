@@ -2,6 +2,33 @@
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
+## Local Kind Deploy Loop
+
+Use this when validating frontend fixes in a local portal Kind environment without
+cutting a release:
+
+```bash
+make refresh-kind-image
+```
+
+By default this command:
+
+- Builds `portal-frontend:dev`
+- Loads it into Kind cluster `kind`
+- Does not mutate deployment state
+
+To deploy the loaded image to the running portal UI deployment:
+
+```bash
+make deploy-debug DEBUG_TAG=debug-copy-1 CLUSTER_NAME=portal NAMESPACE=portal-internal
+```
+
+You can inspect all supported targets and variables with:
+
+```bash
+make help
+```
+
 Currently, two official plugins are available:
 
 - [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh

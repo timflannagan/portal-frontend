@@ -69,14 +69,31 @@ Then verify:
 
 ## Local Testing
 
-Use the portal-enterprise hack script to deploy into a Kind cluster:
+Use the local Kind loop in this repo when iterating on frontend fixes:
 
 ```bash
-# Build and load image
-docker build -t portal-frontend:dev .
-./hack/setup-test-portal.sh -n 5 -v 2 --auth-apis --keycloak -ns portal-system \
-  --frontend-image portal-frontend:dev --load-image
+make refresh-kind-image
 ```
+
+By default this only builds and loads `portal-frontend:dev` into Kind. It does
+not update Kubernetes deployment state.
+
+If the user says "test this change" and does not ask to roll deployment state,
+default to:
+
+```bash
+make refresh-kind-image IMAGE=<image:tag> CLUSTER_NAME=<kind-cluster>
+```
+
+If the user asks to deploy/rollout the app in cluster, use:
+
+```bash
+make deploy-debug DEBUG_TAG=<tag> CLUSTER_NAME=<kind-cluster> NAMESPACE=<namespace>
+```
+
+Common namespace values are environment-specific (`portal-system` and
+`portal-internal` have both been used locally). Pass `NAMESPACE=...` explicitly
+if unsure.
 
 ## Backend Contract
 
