@@ -47,6 +47,26 @@ npm run build     # tsc -b && vite build
 npm run start     # Express production server on port 4000
 ```
 
+## Releases
+
+Production image publishing is handled by GitHub Actions in `.github/workflows/publish.yaml`.
+The workflow runs when a GitHub Release is published (`on: release: types: [published]`).
+
+Use semantic version tags in `vX.Y.Z` format. Example: after `v0.1.0`, the next patch release is
+`v0.1.1`.
+
+Patch release flow:
+
+```bash
+git push origin main
+gh release create v0.1.1 --target main --generate-notes
+```
+
+Then verify:
+
+- The `Publish Image` workflow succeeds in GitHub Actions.
+- `ghcr.io/<owner>/portal-frontend:v0.1.1` exists for both `linux/amd64` and `linux/arm64`.
+
 ## Local Testing
 
 Use the portal-enterprise hack script to deploy into a Kind cluster:
