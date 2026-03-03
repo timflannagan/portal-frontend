@@ -11,41 +11,54 @@ interface CopyButtonProps {
 export function CopyButton({ value, className }: CopyButtonProps) {
   const [copied, setCopied] = useState(false);
 
-  const fallbackCopy = (text: string) => {
-    const textarea = document.createElement("textarea");
-    textarea.value = text;
-    textarea.setAttribute("readonly", "");
-    textarea.style.position = "fixed";
-    textarea.style.left = "-9999px";
-    document.body.appendChild(textarea);
-    textarea.select();
+  const markCopied = () => {
+    setCopied(true);
+    toast.success("Copied to clipboard");
+    setTimeout(() => setCopied(false), 2000);
+  };
 
-    const successful = document.execCommand("copy");
-    document.body.removeChild(textarea);
+  const showManualCopyPrompt = (text: string) => {
+    window.prompt("Clipboard access is unavailable here. Copy manually:", text);
+    toast.info("Copied value opened in prompt for manual copy.");
+  };
 
-    if (!successful) {
-      throw new Error("Clipboard copy command failed");
+  const tryLegacyCopy = (text: string) => {
+    let copiedByHandler = false;
+    const onCopy = (event: ClipboardEvent) => {
+      event.preventDefault();
+      event.clipboardData?.setData("text/plain", text);
+      copiedByHandler = true;
+    };
+
+    document.addEventListener("copy", onCopy);
+    const commandResult = document.execCommand("copy");
+    document.removeEventListener("copy", onCopy);
+
+    if (!commandResult && !copiedByHandler) {
+      throw new Error("Legacy copy failed");
     }
   };
 
   const handleCopy = async () => {
+    if (!value) {
+      toast.error("Nothing to copy.");
+      return;
+    }
+
     try {
-      if (navigator.clipboard?.writeText) {
+      if (window.isSecureContext && navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(value);
+        markCopied();
       } else {
-        fallbackCopy(value);
+        tryLegacyCopy(value);
+        markCopied();
       }
-      setCopied(true);
-      toast.success("Copied to clipboard");
-      setTimeout(() => setCopied(false), 2000);
     } catch {
       try {
-        fallbackCopy(value);
-        setCopied(true);
-        toast.success("Copied to clipboard");
-        setTimeout(() => setCopied(false), 2000);
+        tryLegacyCopy(value);
+        markCopied();
       } catch {
-        toast.error("Failed to copy. Please copy manually.");
+        showManualCopyPrompt(value);
       }
     }
   };
